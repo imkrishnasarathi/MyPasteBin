@@ -1,60 +1,37 @@
-import { useState } from "react";
-import axios from "axios";
+from fastapi import FastAPI, HTTPException
+from uuid import uuid4
+import os
 
-function App() {
-  const [text, setText] = useState("");
-  const [pasteId, setPasteId] = useState("");
-  const [pasteText, setPasteText] = useState("");
+app = FastAPI()
+PASTE_DIR = "pastes"
+os.makedirs(PASTE_DIR, exist_ok=True)  # Create storage folder
 
-  const createPaste = async () => {
-    const response = await axios.post("http://localhost:8000/paste", {
-      text,
-    });
-    setPasteId(response.data.id);
-  };
+@app.post("/paste")
+def create_paste(text: str):
+    paste_id = str(uuid4())[:8]  # Generate a short ID
+    paste_path = os.path.join(PASTE_DIR, f"{paste_id}.txt")
 
-  const fetchPaste = async () => {
-    const response = await axios.get(`http://localhost:8000/paste/${pasteId}`);
-    setPasteText(response.data.text);
-  };
+    with open(paste_path, "w") as f:
+        f.write(text)
 
-  return (
-    <div>
-      <h1>Pastebin</h1>
-      <textarea
-        rows="4"
-        cols="50"
-        placeholder="Enter your text..."
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-      />
-      <br />
-      <button onClick={createPaste}>Create Paste</button>
+    return {"id": paste_id, "url": f"http://localhost:8000/paste/{paste_id}"}
 
-      {pasteId && (
-        <p>
-          Paste Created! ID: <strong>{pasteId}</strong>
-        </p>
-      )}
+@app.get("/paste/{paste_id}")
+def get_paste(paste_id: str):
+    paste_path = os.path.join(PASTE_DIR, f"{paste_id}.txt")
 
-      <hr />
+    if not os.path.exists(paste_path):
+        raise HTTPException(status_code=404, detail="Paste not found")
 
-      <input
-        type="text"
-        placeholder="Enter Paste ID"
-        value={pasteId}
-        onChange={(e) => setPasteId(e.target.value)}
-      />
-      <button onClick={fetchPaste}>Fetch Paste</button>
+    with open(paste_path, "r") as f:
+        return {"id": paste_id, "text": f.read()}
 
-      {pasteText && (
-        <div>
-          <h2>Paste Content:</h2>
-          <pre>{pasteText}</pre>
-        </div>
-      )}
-    </div>
-  );
-}
+@app.delete("/paste/{paste_id}")
+def delete_paste(paste_id: str):
+    paste_path = os.path.join(PASTE_DIR, f"{paste_id}.txt")
 
-export default App;
+    if os.path.exists(paste_path):
+        os.remove(paste_path)
+        return {"message": "Paste deleted"}
+    else:
+        raise HTTPException(status_code=404, detail="Paste not found")
