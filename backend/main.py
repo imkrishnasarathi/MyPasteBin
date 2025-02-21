@@ -4,7 +4,7 @@ import os
 
 app = FastAPI()
 PASTE_DIR = "pastes"
-os.makedirs(PASTE_DIR, exist_ok=True)  # Create storage folder
+os.makedirs(PASTE_DIR, exist_ok=True)
 
 @app.post("/paste")
 def create_paste(text: str):
