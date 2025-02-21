@@ -8,7 +8,7 @@ os.makedirs(PASTE_DIR, exist_ok=True)
 
 @app.post("/paste")
 def create_paste(text: str):
-    paste_id = str(uuid4())[:8]  # Generate a short ID
+    paste_id = str(uuid4())[:8]
     paste_path = os.path.join(PASTE_DIR, f"{paste_id}.txt")
 
     with open(paste_path, "w") as f:
