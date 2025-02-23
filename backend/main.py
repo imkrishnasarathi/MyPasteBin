@@ -25,6 +25,7 @@ def get_paste(paste_id: str):
 
     with open(paste_path, "r") as f:
         return {"id": paste_id, "text": f.read()}
+        
 
 @app.delete("/paste/{paste_id}")
 def delete_paste(paste_id: str):
