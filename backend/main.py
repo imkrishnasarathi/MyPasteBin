@@ -15,6 +15,7 @@ def create_paste(text: str):
         f.write(text)
 
     return {"id": paste_id, "url": f"http://localhost:8000/paste/{paste_id}"}
+    
 
 @app.get("/paste/{paste_id}")
 def get_paste(paste_id: str):
