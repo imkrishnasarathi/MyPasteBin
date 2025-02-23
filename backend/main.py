@@ -37,3 +37,4 @@ def delete_paste(paste_id: str):
         return {"message": "Paste deleted"}
     else:
         raise HTTPException(status_code=404, detail="Paste not found")
+        
